@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>MB Dashboard</title>
+<title>Dashboard-Api</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
 
@@ -115,6 +115,28 @@ button:hover{
   box-shadow:0 0 20px #a855f7;
 }
 
+/* COUNTDOWN */
+#countdown{
+  font-size:14px;
+  margin-top:6px;
+  opacity:0.9;
+}
+
+.expire{
+  color:#ff4d4d;
+  font-weight:600;
+}
+
+.pulse{
+  animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+  0%{opacity:1}
+  50%{opacity:0.4}
+  100%{opacity:1}
+}
+
 /* ORDERS */
 .order{
   display:flex;
@@ -185,7 +207,9 @@ button:hover{
   <h3>💳 Create Bill</h3>
   <input id="amount" placeholder="Nhập số tiền">
   <button onclick="create()">Tạo ngay</button>
+
   <div id="qr"></div>
+  <div id="countdown"></div>
 </div>
 
 <div class="card fade">
