@@ -4,6 +4,11 @@
   "license": "MIT",
   "dependencies": {
     "@upstash/redis": "latest",
-    "moment": "^2.29.4"
+    "moment": "^2.29.4",
+    "undici": "^6.0.0",
+    "axios": "^1.6.0",
+    "crypto-js": "^4.2.0",
+    "uuid": "^9.0.0",
+    "qs": "^6.11.2"
   }
 }
