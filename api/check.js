@@ -2,14 +2,13 @@ const redis = require("../lib/redis");
 const { getHistory } = require("../lib/mb");
 
 module.exports = async (req, res) => {
+
   const note = req.query.note;
 
-  if (!note) return res.json({ error: "missing note" });
-
   const pay = await redis.get("pay:" + note);
-
   if (!pay) return res.json({ status: "not_found" });
 
+  // hết hạn
   if (Date.now() > pay.expire) {
     pay.status = "expired";
     await redis.set("pay:" + note, pay);
@@ -18,10 +17,9 @@ module.exports = async (req, res) => {
 
   const history = await getHistory();
 
-  const found = history.find(tx => {
-    const desc = (tx.description || "").toLowerCase();
-    return desc.includes(note.toLowerCase());
-  });
+  const found = history.find(tx =>
+    (tx.description || "").includes(note)
+  );
 
   if (found) {
     pay.status = "paid";
