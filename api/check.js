@@ -1,3 +1,6 @@
+const redis = require("../lib/redis");
+const { getHistory } = require("../lib/mb");
+
 module.exports = async (req, res) => {
   try {
     const note = req.query.note;
@@ -6,14 +9,14 @@ module.exports = async (req, res) => {
     const payment = await redis.get(`pay:${note}`);
     if (!payment) return res.json({ status: "not_found" });
 
-    // ⛔ HẾT HẠN
+    // ⛔ hết hạn
     if (Date.now() > payment.expireAt) {
       payment.status = "expired";
       await redis.set(`pay:${note}`, payment);
       return res.json({ status: "expired" });
     }
 
-    // 🔍 check giao dịch
+    // 🔍 check lịch sử
     const history = await getHistory();
 
     const found = history.find(tx =>
@@ -26,9 +29,9 @@ module.exports = async (req, res) => {
       return res.json({ status: "paid" });
     }
 
-    return res.json({ status: "pending" });
+    res.json({ status: "pending" });
 
   } catch (e) {
-    res.json({ status: "error", msg: e.message });
+    res.json({ error: e.message });
   }
 };
