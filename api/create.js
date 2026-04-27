@@ -1,36 +1,31 @@
 const redis = require("../lib/redis");
 
-const EXPIRE = 2 * 60 * 1000;
-const LIMIT_TIME = 10; // 10s
+const EXPIRE = 120000;
+const LIMIT = 3;
 
 module.exports = async (req, res) => {
-  try {
+  try{
     const amount = Number(req.query.nap);
 
     if (!amount || amount <= 0) {
       return res.json({ error: "invalid amount" });
     }
 
-    // 📍 LẤY IP
     const ip =
       req.headers["x-forwarded-for"] ||
-      req.connection.remoteAddress ||
-      "unknown";
+      req.connection?.remoteAddress ||
+      "ip";
 
-    // 🚫 RATE LIMIT
-    const key = `limit:${ip}`;
+    const key = "limit:" + ip;
+
     const count = await redis.get(key) || 0;
 
-    if (count >= 3) {
-      return res.json({
-        error: "too many requests",
-        wait: "10s"
-      });
+    if (count >= LIMIT) {
+      return res.json({ error: "too many requests" });
     }
 
-    await redis.set(key, count + 1, { ex: LIMIT_TIME });
+    await redis.set(key, count + 1, { ex: 10 });
 
-    // 💳 tạo bill
     const note = "nap" + Date.now();
 
     const data = {
@@ -41,15 +36,14 @@ module.exports = async (req, res) => {
       expireAt: Date.now() + EXPIRE
     };
 
-    await redis.set(`pay:${note}`, data, { ex: 180 });
+    await redis.set("pay:" + note, data, { ex: 180 });
 
     res.json({
       qr: `https://img.vietqr.io/image/MB-0975868667-compact2.png?amount=${amount}&addInfo=${note}`,
-      note,
-      expire: "2 phút"
+      note
     });
 
-  } catch (e) {
+  }catch(e){
     res.json({ error: e.message });
   }
 };
