@@ -1,23 +1,23 @@
 const redis = require("../lib/redis");
 
 module.exports = async (req, res) => {
-  try {
+  try{
     const keys = await redis.keys("pay:*");
     const data = await Promise.all(keys.map(k => redis.get(k)));
 
-    const totalOrders = data.length;
-    const paidOrders = data.filter(i => i.status === "paid").length;
-    const income = data.reduce((sum, i) =>
-      i.status === "paid" ? sum + i.amount : sum, 0
+    const total = data.length;
+    const done = data.filter(i => i.status === "paid").length;
+    const income = data.reduce((s,i)=>
+      i.status==="paid"?s+i.amount:s,0
     );
 
     res.json({
-      totalOrders,
-      paidOrders,
+      totalOrders: total,
+      successOrders: done,
       income
     });
 
-  } catch (e) {
+  }catch(e){
     res.json({ error: e.message });
   }
 };
