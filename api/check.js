@@ -2,21 +2,21 @@ const redis = require("../lib/redis");
 const { getHistory } = require("../lib/mb");
 
 module.exports = async (req, res) => {
-  try {
+  try{
     const note = req.query.note;
+
     if (!note) return res.json({ error: "missing note" });
 
-    const payment = await redis.get(`pay:${note}`);
-    if (!payment) return res.json({ status: "not_found" });
+    const pay = await redis.get("pay:" + note);
 
-    // ⛔ hết hạn
-    if (Date.now() > payment.expireAt) {
-      payment.status = "expired";
-      await redis.set(`pay:${note}`, payment);
+    if (!pay) return res.json({ status: "not_found" });
+
+    if (Date.now() > pay.expireAt) {
+      pay.status = "expired";
+      await redis.set("pay:" + note, pay);
       return res.json({ status: "expired" });
     }
 
-    // 🔍 check lịch sử
     const history = await getHistory();
 
     const found = history.find(tx =>
@@ -24,14 +24,14 @@ module.exports = async (req, res) => {
     );
 
     if (found) {
-      payment.status = "paid";
-      await redis.set(`pay:${note}`, payment);
+      pay.status = "paid";
+      await redis.set("pay:" + note, pay);
       return res.json({ status: "paid" });
     }
 
     res.json({ status: "pending" });
 
-  } catch (e) {
+  }catch(e){
     res.json({ error: e.message });
   }
 };
